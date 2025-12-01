@@ -4,6 +4,7 @@ import HousesList from './pages/HousesList'
 import HouseDetail from './pages/HouseDetail'
 import SpellsList from './pages/SpellsList'
 import SpellDetail from './pages/SpellDetail'
+import FavoritesList from './pages/FavoritesList' // ADIÇÃO
 import logo from './assets/logo.png'
 import './index.css'
 
@@ -16,7 +17,9 @@ export default function App() {
         </Link>
 
         <nav className="menu">
+          <Link to="/home" className="menu-link">Houses</Link>
           <Link to="/spells" className="menu-link">Spells</Link>
+          <Link to="/favorites" className="menu-link">Favorites</Link> {/* ADIÇÃO */}
         </nav>
       </header>
 
@@ -27,6 +30,7 @@ export default function App() {
           <Route path="/houses/:id" element={<HouseDetail />} />
           <Route path="/spells" element={<SpellsList />} />
           <Route path="/spells/:id" element={<SpellDetail />} />
+          <Route path="/favorites" element={<FavoritesList />} /> {/* ADIÇÃO */}
         </Routes>
       </main>
     </BrowserRouter>

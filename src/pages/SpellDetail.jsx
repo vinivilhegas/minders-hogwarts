@@ -1,89 +1,187 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { getSpellDetail } from "../api";
+import React, { useEffect, useState, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
+import { getSpellDetail } from "../api"; // certifique-se que existe essa função
 import "../index.css";
+import { trackEvent } from "../analytics"; // helper de tracking
 
-function mapLightToColor(light) {
-  if (!light) return "#9CA3AF";
-  const l = light.toLowerCase();
-  if (l.includes("blue")) return "#2563EB";
-  if (l.includes("red") || l.includes("scarlet")) return "#DC2626";
-  if (l.includes("green")) return "#059669";
-  if (l.includes("orange") || l.includes("fiery")) return "#F97316";
-  if (l.includes("purple")) return "#7C3AED";
-  if (l.includes("gold")) return "#D4AF37";
-  if (l.includes("white") || l.includes("transparent")) return "#374151";
-  if (l.includes("pink")) return "#ec4899";
-  if (l.includes("grey") || l.includes("gray")) return "#6B7280";
-  return "#6B7280";
+// helpers simples de favorite (localStorage)
+const LS_KEY_SPELLS = "favorite_spells";
+function getFavoriteSpellIds() {
+  try {
+    const raw = localStorage.getItem(LS_KEY_SPELLS);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+function setFavoriteSpellIds(ids) {
+  try {
+    localStorage.setItem(LS_KEY_SPELLS, JSON.stringify(ids));
+  } catch {}
+}
+function isSpellFavorited(id) {
+  return getFavoriteSpellIds().includes(id);
+}
+function addFavoriteSpell(id) {
+  const ids = getFavoriteSpellIds();
+  if (!ids.includes(id)) {
+    ids.push(id);
+    setFavoriteSpellIds(ids);
+  }
+}
+function removeFavoriteSpell(id) {
+  const ids = getFavoriteSpellIds().filter((x) => x !== id);
+  setFavoriteSpellIds(ids);
 }
 
 export default function SpellDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
-
   const [spell, setSpell] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showRaw, setShowRaw] = useState(false);
+
+  const hasTrackedDetailView = useRef(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    if (!id) {
-      setError("ID inválido");
-      setLoading(false);
-      return;
+
+    async function load() {
+      setLoading(true);
+      try {
+        const data = await getSpellDetail(id);
+        if (!mounted) return;
+        setSpell(data);
+
+        // set favorited state based on resolved id
+        const resolvedId = data?.id ?? id;
+        setIsFavorited(isSpellFavorited(resolvedId));
+
+        // TRACK: only after data is available, once per logical mount
+        if (!hasTrackedDetailView.current) {
+          console.log("🔵 Tracking Spell Detail Viewed:", {
+            spell_id: data?.id ?? id,
+            spell_name: data?.name ?? "Unnamed",
+            platform: "web",
+          });
+          try {
+            trackEvent("Spell Detail Viewed", {
+              spell_id: data?.id ?? id,
+              spell_name: data?.name ?? "Unnamed",
+              platform: "web",
+            });
+          } catch (e) {
+            console.warn("tracking error (Spell Detail Viewed):", e);
+          }
+          hasTrackedDetailView.current = true;
+        }
+      } catch (err) {
+        if (mounted) setError(err.message || "Error loading spell");
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-    setLoading(true);
-    getSpellDetail(id)
-      .then(data => { if (mounted) setSpell(data ?? null); })
-      .catch(err => { if (mounted) setError(err.message || "Error on loading spell"); })
-      .finally(() => { if (mounted) setLoading(false); });
 
-    return () => { mounted = false; };
+    if (id) load();
+
+    return () => {
+      mounted = false;
+    };
   }, [id]);
+  const toggleFavorite = () => {
+    const resolvedId = spell?.id ?? id;
+    const resolvedName = spell?.name ?? "Unnamed";
+    if (!resolvedId) return;
 
-  if (loading) return <div className="loader-wrap"><div className="spinner" />Loading spell...</div>;
+    if (isFavorited) {
+      removeFavoriteSpell(resolvedId);
+      setIsFavorited(false);
+      console.log("🟡 Tracking Spell Unfavorited:", { spell_id: resolvedId, spell_name: resolvedName });
+      try {
+        trackEvent("Spell Unfavorited", { spell_id: resolvedId, spell_name: resolvedName, platform: "web" });
+      } catch (e) {
+        console.warn("tracking error (Spell Unfavorited):", e);
+      }
+    } else {
+      addFavoriteSpell(resolvedId);
+      setIsFavorited(true);
+      console.log("🟢 Tracking Spell Favorited:", { spell_id: resolvedId, spell_name: resolvedName });
+      try {
+        trackEvent("Spell Favorited", { spell_id: resolvedId, spell_name: resolvedName, platform: "web" });
+      } catch (e) {
+        console.warn("tracking error (Spell Favorited):", e);
+      }
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="loader-wrap">
+        <div className="spinner" />Loading...
+      </div>
+    );
+
   if (error) return <div className="error">Error: {error}</div>;
-  if (!spell) return <div className="empty">Spell not found. <Link to="/spells">Back</Link></div>;
+  if (!spell)
+    return (
+      <div className="empty">
+        Spell not found. <Link to="/spells">Back</Link>
+      </div>
+    );
 
-  const color = mapLightToColor(spell.light);
-  const verbal = spell.canBeVerbal === true ? "Yes" : (spell.canBeVerbal === false ? "No" : "Unknown");
+  const name = spell.name ?? "Unnamed";
+  const effect = spell.effect ?? "—";
+  const incantation = spell.incantation ?? "—";
+  const type = spell.type ?? "—";
+  const creator = spell.creator ?? "—";
 
   return (
     <div className="page-container">
       <div className="detail-card">
-        <div className="detail-header" style={{ alignItems: "flex-start", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <h1 className="detail-title">{spell.name}</h1>
-            <span className="spell-badge" style={{ background: color }}>
-              {spell.type ?? "—"}
-            </span>
+        <div className="detail-header">
+          <div>
+            <h1 className="detail-title">{name}</h1>
+            <div className="muted"><strong>Type:</strong> {type}</div>
           </div>
 
           <div className="detail-meta">
-            {spell.incantation && <div><strong>Incantation:</strong> {spell.incantation}</div>}
-            <div><strong>Light:</strong> {spell.light ?? "—"}</div>
-            <div><strong>Verbal:</strong> {verbal}</div>
-            {spell.creator && <div><strong>Creator:</strong> {spell.creator}</div>}
+            <div><strong>Creator:</strong> {creator}</div>
           </div>
         </div>
 
-        <div className="detail-body" style={{ marginTop: 12 }}>
-          <h3 style={{ margin: "0 0 8px 0" }}>Effect</h3>
-          <p className="effect-text">{spell.effect ?? "—"}</p>
+        <div className="detail-body">
+          <p><strong>Incantation:</strong> {incantation}</p>
+          <p><strong>Effect:</strong> {effect}</p>
 
-          <div className="detail-actions" style={{ marginTop: 18 }}>
-            <button className="btn" onClick={() => navigate(-1)}>← Back</button>
-            
+          <div className="detail-actions" style={{ marginTop: 18, display: "flex", gap: 8 }}>
+            <Link
+              to="/spells"
+              className="btn"
+              onClick={() => {
+                console.log("🟡 Tracking Spell Back Click:", { spell_id: id, spell_name: name });
+                try {
+                  trackEvent("Spell Detail Back Clicked", { spell_id: id, spell_name: name, platform: "web" });
+                } catch (e) {
+                  console.warn("tracking error (Spell Detail Back Clicked):", e);
+                }
+              }}
+            >
+              Back
+            </Link>
+
+            <button
+              className="btn"
+              onClick={toggleFavorite}
+              aria-pressed={isFavorited}
+              title={isFavorited ? "Unfavorite" : "Favorite"}
+              style={{
+                backgroundColor: isFavorited ? "#ffd54f" : undefined,
+                border: "1px solid #ccc",
+              }}
+            >
+              {isFavorited ? "Unfavorite" : "Favorite"}
+            </button>
           </div>
-
-          {showRaw && (
-            <div style={{ marginTop: 18 }}>
-              <p style={{ margin: 0 }}><strong>Raw JSON</strong></p>
-              <pre className="json-raw">{JSON.stringify(spell, null, 2)}</pre>
-            </div>
-          )}
         </div>
       </div>
     </div>

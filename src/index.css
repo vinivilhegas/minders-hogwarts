@@ -268,6 +268,12 @@ html,body,#root{
   font-weight: 500;
 }
 
+.menu {
+  display: flex;
+  gap: 20px; /* espaçamento entre os itens */
+  align-items: center;
+}
+
 .menu-link:hover {
   text-decoration: underline;
 }

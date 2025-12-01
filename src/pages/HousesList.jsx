@@ -1,16 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getHouses } from "../api";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import { trackEvent } from "../analytics"; // ADIÇÃO: helper de tracking
 
 export default function HousesList() {
   const [houses, setHouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const hasTrackedListView = useRef(false); // evita duplicação em StrictMode
 
   useEffect(() => {
+    // TRACK: dispara apenas uma vez por montagem lógica
+    if (!hasTrackedListView.current) {
+      try {
+        trackEvent("Houses List Viewed", { platform: "web" });
+      } catch (e) {
+        console.warn("tracking error (Houses List Viewed):", e);
+      }
+      hasTrackedListView.current = true;
+    }
+
     let mounted = true;
     setLoading(true);
     getHouses()
@@ -62,13 +74,24 @@ export default function HousesList() {
               const traits = Array.isArray(h.traits)
                 ? h.traits.map((t) => t.name).slice(0, 5).join(", ")
                 : "—";
-
               return (
                 <article
                   key={id ?? name}
                   className="house-card"
                   role="button"
-                  onClick={() => navigate(`/houses/${encodeURIComponent(id)}`)} 
+                  onClick={() => {
+                    // TRACK: clique no card (antes de navegar)
+                    try {
+                      trackEvent("House Card Clicked", {
+                        house_id: id,
+                        house_name: name,
+                        platform: "web",
+                      });
+                    } catch (e) {
+                      console.warn("tracking error (House Card Clicked):", e);
+                    }
+                    navigate(`/houses/${encodeURIComponent(id)}`);
+                  }}
                   style={{ cursor: "pointer" }}
                 >
                   <header className="house-card-header">

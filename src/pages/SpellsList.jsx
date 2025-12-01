@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getSpells } from "../api";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import { trackEvent } from "../analytics"; // ADIÇÃO
 
 const TYPE_OPTIONS = [
   "All",
@@ -34,7 +35,21 @@ export default function SpellsList() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
+  const hasTrackedListView = useRef(false); // evita duplicação em StrictMode
+  const searchDebounceRef = useRef(null);
+
   useEffect(() => {
+    // Page view tracking (once)
+    if (!hasTrackedListView.current) {
+      try {
+        console.log("🔵 Tracking Spells List Viewed", { platform: "web", type, page_name:'SpellsList' });
+        trackEvent("Spells List Viewed", { platform: "web", type, page_name:'SpellsList'});
+      } catch (e) {
+        console.warn("tracking error (Spells List Viewed):", e);
+      }
+      hasTrackedListView.current = true;
+    }
+
     let mounted = true;
     setLoading(true);
     setError(null);
@@ -63,6 +78,56 @@ export default function SpellsList() {
            (s.incantation || "").toLowerCase().includes(q);
   });
 
+  // handler: click in a spell card -> track then navigate
+  const handleSpellClick = (s) => {
+    const id = s.id;
+    const name = s.name ?? "Unnamed";
+    try {
+      console.log("🔵 Tracking Spell Card Clicked", { spell_id: id, spell_name: name });
+      trackEvent("Spell Card Clicked", { spell_id: id, spell_name: name, platform: "web" });
+    } catch (e) {
+      console.warn("tracking error (Spell Card Clicked):", e);
+    }
+    navigate(`/spells/${encodeURIComponent(id)}`);
+  };
+  // handler: picklist change -> track filter applied
+  const handleTypeChange = (value) => {
+    setType(value);
+    try {
+      console.log("🔵 Tracking Spells Filter Applied", { filter_name: "type", filter_value: value });
+      trackEvent("Spells Filter Applied", { filter_name: "type", filter_value: value, platform: "web" });
+    } catch (e) {
+      console.warn("tracking error (Spells Filter Applied):", e);
+    }
+  };
+
+  // handler: search input with debounce -> track search performed
+  const handleQueryChange = (value) => {
+    setQuery(value);
+
+    // reset debounce
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    // debounce 600ms
+    searchDebounceRef.current = setTimeout(() => {
+      try {
+        console.log("🔵 Tracking Spells Search Performed", { query: value, result_count: visible.length });
+        trackEvent("Spells Search Performed", { query: value, result_count: visible.length, platform: "web" });
+      } catch (e) {
+        console.warn("tracking error (Spells Search Performed):", e);
+      }
+    }, 600);
+  };
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, []);
+
   return (
     <div className="page-container">
       <div className="page-header" style={{ alignItems: "flex-start", gap: 12 }}>
@@ -71,7 +136,7 @@ export default function SpellsList() {
   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
     <select
       value={type}
-      onChange={e => setType(e.target.value)}
+      onChange={e => handleTypeChange(e.target.value)}
       className="select"
     >
       {TYPE_OPTIONS.map(t => (
@@ -83,7 +148,7 @@ export default function SpellsList() {
       className="search"
       placeholder="Search name, incantation or effect"
       value={query}
-      onChange={e => setQuery(e.target.value)}
+      onChange={e => handleQueryChange(e.target.value)}
     />
   </div>
 </div>
@@ -102,7 +167,7 @@ export default function SpellsList() {
                   key={id}
                   className="spell-card"
                   role="button"
-                  onClick={() => navigate(`/spells/${encodeURIComponent(id)}`)}
+                  onClick={() => handleSpellClick(s)}
                   style={{ cursor: "pointer" }}
                 >
                   <header className="house-card-header">

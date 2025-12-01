@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.31.3",
+    "@amplitude/plugin-autocapture-browser": "^1.18.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^7.9.6",
