@@ -1,4 +1,4 @@
-export function detectPlatform() {
+export function getPlatform() {
   const ua = navigator.userAgent || window.opera;
 
   if (/android/i.test(ua)) return "mobile_web";

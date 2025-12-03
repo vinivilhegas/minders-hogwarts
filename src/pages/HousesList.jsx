@@ -16,6 +16,7 @@ export default function HousesList() {
   useEffect(() => {
     if (!hasTrackedListView.current) {
       try {
+        console.log('getPlatform(): ' + getPlatform());
         trackEvent("Houses List Viewed", { platform: getPlatform() });
       } catch (e) {
         console.warn("tracking error (Houses List Viewed):", e);
