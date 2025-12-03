@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getSpellDetail } from "../api"; // certifique-se que existe essa função
+import { getSpellDetail } from "../api"; 
 import "../index.css";
-import { trackEvent } from "../analytics"; // helper de tracking
+import { trackEvent } from "../analytics"; 
 
-// helpers simples de favorite (localStorage)
 const LS_KEY_SPELLS = "favorite_spells";
 function getFavoriteSpellIds() {
   try {
@@ -53,17 +52,10 @@ export default function SpellDetail() {
         if (!mounted) return;
         setSpell(data);
 
-        // set favorited state based on resolved id
         const resolvedId = data?.id ?? id;
         setIsFavorited(isSpellFavorited(resolvedId));
 
-        // TRACK: only after data is available, once per logical mount
-        if (!hasTrackedDetailView.current) {
-          console.log("🔵 Tracking Spell Detail Viewed:", {
-            spell_id: data?.id ?? id,
-            spell_name: data?.name ?? "Unnamed",
-            platform: "web",
-          });
+        if (!hasTrackedDetailView.current) {         
           try {
             trackEvent("Spell Detail Viewed", {
               spell_id: data?.id ?? id,
@@ -96,7 +88,6 @@ export default function SpellDetail() {
     if (isFavorited) {
       removeFavoriteSpell(resolvedId);
       setIsFavorited(false);
-      console.log("🟡 Tracking Spell Unfavorited:", { spell_id: resolvedId, spell_name: resolvedName });
       try {
         trackEvent("Spell Unfavorited", { spell_id: resolvedId, spell_name: resolvedName, platform: "web" });
       } catch (e) {
@@ -105,7 +96,6 @@ export default function SpellDetail() {
     } else {
       addFavoriteSpell(resolvedId);
       setIsFavorited(true);
-      console.log("🟢 Tracking Spell Favorited:", { spell_id: resolvedId, spell_name: resolvedName });
       try {
         trackEvent("Spell Favorited", { spell_id: resolvedId, spell_name: resolvedName, platform: "web" });
       } catch (e) {
@@ -158,7 +148,6 @@ export default function SpellDetail() {
               to="/spells"
               className="btn"
               onClick={() => {
-                console.log("🟡 Tracking Spell Back Click:", { spell_id: id, spell_name: name });
                 try {
                   trackEvent("Spell Detail Back Clicked", { spell_id: id, spell_name: name, platform: "web" });
                 } catch (e) {

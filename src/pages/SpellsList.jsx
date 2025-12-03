@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { getSpells } from "../api";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
-import { trackEvent } from "../analytics"; // ADIÇÃO
+import { trackEvent } from "../analytics"; 
 
 const TYPE_OPTIONS = [
   "All",
@@ -11,7 +11,6 @@ const TYPE_OPTIONS = [
   "Untransfiguration","BindingMagicalContractVanishment"
 ];
 
-// map "light" (string) -> css color. fallback to gray
 function mapLightToColor(light) {
   if (!light) return "#9CA3AF";
   const l = light.toLowerCase();
@@ -35,14 +34,12 @@ export default function SpellsList() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
-  const hasTrackedListView = useRef(false); // evita duplicação em StrictMode
+  const hasTrackedListView = useRef(false); 
   const searchDebounceRef = useRef(null);
 
   useEffect(() => {
-    // Page view tracking (once)
     if (!hasTrackedListView.current) {
       try {
-        console.log("🔵 Tracking Spells List Viewed", { platform: "web", type, page_name:'SpellsList' });
         trackEvent("Spells List Viewed", { platform: "web", type, page_name:'SpellsList'});
       } catch (e) {
         console.warn("tracking error (Spells List Viewed):", e);
@@ -69,7 +66,6 @@ export default function SpellsList() {
     return () => { mounted = false; }
   }, [type]);
 
-  // filtered by search query
   const visible = spells.filter(s => {
     if (!query) return true;
     const q = query.toLowerCase();
@@ -78,42 +74,34 @@ export default function SpellsList() {
            (s.incantation || "").toLowerCase().includes(q);
   });
 
-  // handler: click in a spell card -> track then navigate
   const handleSpellClick = (s) => {
     const id = s.id;
     const name = s.name ?? "Unnamed";
     try {
-      console.log("🔵 Tracking Spell Card Clicked", { spell_id: id, spell_name: name });
       trackEvent("Spell Card Clicked", { spell_id: id, spell_name: name, platform: "web" });
     } catch (e) {
       console.warn("tracking error (Spell Card Clicked):", e);
     }
     navigate(`/spells/${encodeURIComponent(id)}`);
   };
-  // handler: picklist change -> track filter applied
   const handleTypeChange = (value) => {
     setType(value);
     try {
-      console.log("🔵 Tracking Spells Filter Applied", { filter_name: "type", filter_value: value });
       trackEvent("Spells Filter Applied", { filter_name: "type", filter_value: value, platform: "web" });
     } catch (e) {
       console.warn("tracking error (Spells Filter Applied):", e);
     }
   };
 
-  // handler: search input with debounce -> track search performed
   const handleQueryChange = (value) => {
     setQuery(value);
 
-    // reset debounce
     if (searchDebounceRef.current) {
       clearTimeout(searchDebounceRef.current);
     }
 
-    // debounce 600ms
     searchDebounceRef.current = setTimeout(() => {
       try {
-        console.log("🔵 Tracking Spells Search Performed", { query: value, result_count: visible.length });
         trackEvent("Spells Search Performed", { query: value, result_count: visible.length, platform: "web" });
       } catch (e) {
         console.warn("tracking error (Spells Search Performed):", e);
@@ -121,7 +109,6 @@ export default function SpellsList() {
     }, 600);
   };
 
-  // cleanup on unmount
   useEffect(() => {
     return () => {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);

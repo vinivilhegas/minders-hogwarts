@@ -2,8 +2,8 @@
   --bg: #f7f8fb;
   --card: #ffffff;
   --muted: #6b7280;
-  --accent: #6b21a8; /* roxo */
-  --accent-2: #0ea5a4; /* teal */
+  --accent: #6b21a8; 
+  --accent-2: #0ea5a4; 
   --border: #e6e9ef;
   --shadow: 0 6px 18px rgba(16,24,40,0.06);
   --radius: 12px;
@@ -41,7 +41,6 @@ html,body,#root{
   color:var(--muted);
 }
 
-/* grid of cards */
 .houses-grid{
   display:grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -49,7 +48,6 @@ html,body,#root{
   margin-top:12px;
 }
 
-/* card */
 .house-card{
   background:var(--card);
   border:1px solid var(--border);
@@ -85,7 +83,6 @@ html,body,#root{
   font-weight:600;
 }
 
-/* body text */
 .house-body{
   margin-top:10px;
   color:#0f172a;
@@ -104,13 +101,11 @@ html,body,#root{
   color:#111827;
 }
 
-/* hint & empty */
 .hint{
   margin-top:18px;
   color:var(--muted);
 }
 
-/* detail card */
 .detail-card{
   background:var(--card);
   border:1px solid var(--border);
@@ -149,7 +144,6 @@ html,body,#root{
   margin-top:18px;
 }
 
-/* button like link */
 .btn{
   display:inline-block;
   padding:10px 14px;
@@ -160,7 +154,6 @@ html,body,#root{
   font-weight:600;
 }
 
-/* loader */
 .loader-wrap{
   display:flex;
   align-items:center;
@@ -180,7 +173,6 @@ html,body,#root{
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* responsive tweaks */
 @media (max-width:600px){
   .page-container { margin: 18px auto; padding: 0 12px; }
   .title { font-size:22px; }
@@ -245,24 +237,21 @@ html,body,#root{
   transform: translateY(-2px);
 }
 
-/* Header preto com logo e menu alinhados */
 .header {
-  background-color: #000;     /* preto */
+  background-color: #000;    
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
 }
 
-/* Logo */
 .logo-img {
   height: 50px;
   cursor: pointer;
 }
 
-/* Links do menu */
 .menu-link {
-  color: #fff;                /* branco */
+  color: #fff;               
   text-decoration: none;
   font-size: 18px;
   font-weight: 500;
@@ -270,7 +259,7 @@ html,body,#root{
 
 .menu {
   display: flex;
-  gap: 20px; /* espaçamento entre os itens */
+  gap: 20px; 
   align-items: center;
 }
 
@@ -278,7 +267,6 @@ html,body,#root{
   text-decoration: underline;
 }
 
-/* Spells styles */
 .spell-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -292,7 +280,6 @@ html,body,#root{
   box-shadow: 0 14px 36px rgba(16,24,40,0.12);
 }
 
-/* select and search */
 .select {
   padding: 8px 10px;
   border-radius: 8px;
@@ -306,23 +293,19 @@ html,body,#root{
   width: 300px;
 }
 
-/* reuse houses-grid for cards layout */
 .spell-card .house-name {
   font-size: 16px;
 }
 
-/* for pre in detail */
 pre {
   font-size: 13px;
   line-height: 1.4;
 }
 
-/* Alinha os controles logo após o título (esquerda) */
 .controls-left {
-  margin-left: 12px; /* distância entre título e controles */
+  margin-left: 12px; 
 }
 
-/* melhora responsivo: em telas pequenas empilha título acima dos controles */
 @media (max-width: 720px) {
   .page-header {
     flex-direction: column;
@@ -338,14 +321,12 @@ pre {
   .search { flex: 1; min-width: 0; }
 }
 
-/* header em linha (aplicar quando quiser os controles na mesma linha do título) */
 .row-header {
-  flex-direction: row;      /* força a linha (o padrão .page-header é column) */
+  flex-direction: row;     
   align-items: center;
   gap: 12px;
 }
 
-/* ajuste responsivo: em telas pequenas voltamos a empilhar */
 @media (max-width: 720px) {
   .row-header {
     flex-direction: column;
@@ -353,7 +334,6 @@ pre {
   }
 }
 
-/* Spell detail enhancements */
 .detail-title {
   margin: 0;
   font-size: 28px;
@@ -400,7 +380,6 @@ pre {
   border: 1px solid var(--border);
 }
 
-/* raw json box */
 .json-raw {
   margin-top: 8px;
   background: #0b1220;
@@ -412,13 +391,11 @@ pre {
   line-height: 1.4;
 }
 
-/* responsive tweaks */
 @media (max-width: 820px) {
   .detail-header { flex-direction: column; align-items: flex-start; }
   .detail-meta { text-align: left; min-width: 0; margin-top: 8px; }
 }
 
-/* Heads | Traits | Image layout */
 .heads-traits-image {
   display: flex;
   gap: 24px;
@@ -428,21 +405,18 @@ pre {
   justify-content: flex-start;
 }
 
-/* section que contém listas (heads / traits) */
 .ht-section {
-  flex: 1 1 260px; /* ocupa espaço, mas permite encolher */
+  flex: 1 1 260px; 
   min-width: 180px;
 }
 
-/* imagem fixa à direita */
 .ht-image {
-  flex: 0 0 160px; /* largura fixa */
+  flex: 0 0 160px; 
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* imagem responsiva dentro do container */
 .house-image {
   width: 160px;
   height: 160px;
@@ -452,7 +426,6 @@ pre {
   background: #fff;
 }
 
-/* quando a tela ficar pequena, empilha: heads / traits / imagem */
 @media (max-width: 880px) {
   .heads-traits-image {
     flex-direction: column;

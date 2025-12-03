@@ -4,7 +4,6 @@ import { getHouses, getSpells } from "../api";
 import "../index.css";
 import { trackEvent } from "../analytics";
 
-/* helpers: le keys separadas */
 function getFavoriteHouseIds() {
   try {
     const raw = localStorage.getItem("favorite_houses");
@@ -24,7 +23,6 @@ function setFavoriteSpellIds(ids) {
   try { localStorage.setItem("favorite_spells", JSON.stringify(ids)); } catch {}
 }
 
-/* remove de acordo com tipo */
 function removeFavorite(type, id) {
   if (type === "house") {
     const ids = getFavoriteHouseIds().filter(x => x !== id);
@@ -36,18 +34,16 @@ function removeFavorite(type, id) {
 }
 
 export default function FavoritesList() {
-  const [items, setItems] = useState([]); // items unified: { type, id, name, meta... }
+  const [items, setItems] = useState([]); 
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("🔵 Tracking Favorites List Viewed (unified)");
     try { trackEvent("Favorites List Viewed", { platform: "web" }); } catch (e) { console.warn(e); }
 
     let mounted = true;
     setLoading(true);
 
-    // carregar dados em paralelo
     Promise.all([ getHouses(), getSpells() ])
       .then(([housesData, spellsData]) => {
         if (!mounted) return;
@@ -57,7 +53,6 @@ export default function FavoritesList() {
         const favHouseIds = getFavoriteHouseIds();
         const favSpellIds = getFavoriteSpellIds();
 
-        // mapear favoritos das houses
         const favHouses = houses
           .filter(h => favHouseIds.includes(h.id ?? (h.url ? h.url.split("/").pop() : undefined)))
           .map(h => ({
@@ -67,7 +62,6 @@ export default function FavoritesList() {
             meta: h,
           }));
 
-        // mapear favoritos de spells
         const favSpells = spells
           .filter(s => favSpellIds.includes(s.id))
           .map(s => ({
@@ -77,7 +71,6 @@ export default function FavoritesList() {
             meta: s,
           }));
 
-        // unir e setar
         setItems([...favHouses, ...favSpells]);
       })
       .catch((err) => {
@@ -94,7 +87,6 @@ export default function FavoritesList() {
     removeFavorite(type, id);
     setItems(prev => prev.filter(item => !(item.type === type && item.id === id)));
 
-    console.log("🟡 Tracking Unfavorited (unified):", { type, id, name });
     try { trackEvent("Item Unfavorited", { item_type: type, item_id: id, item_name: name, platform: "web", source: "favorites_list" }); }
     catch (e) { console.warn(e); }
   };
@@ -118,7 +110,6 @@ export default function FavoritesList() {
               className="house-card"
               role="button"
               onClick={() => {
-                // navegar para rota correspondente
                 if (type === "house") navigate(`/houses/${encodeURIComponent(id)}`);
                 else if (type === "spell") navigate(`/spells/${encodeURIComponent(id)}`);
               }}
@@ -130,7 +121,7 @@ export default function FavoritesList() {
               </header>
 
               <div className="house-body">
-                {/* mostrar pouco meta dependendo do tipo */}
+                {}
                 {type === "house" ? (
                   <>
                     <p className="muted"><strong>Founder:</strong> {item.meta?.founder ?? "—"}</p>

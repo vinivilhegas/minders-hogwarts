@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getHouseDetail } from "../api";
 import "../index.css";
-import { trackEvent } from "../analytics"; // helper de tracking
+import { trackEvent } from "../analytics"; 
 
 async function resolveHouseImage(name) {
   if (!name) {
@@ -21,9 +21,6 @@ async function resolveHouseImage(name) {
   }
 }
 
-/**
- * Helper simples de favorites usando localStorage
- */
 function getFavoriteIds() {
   try {
     const raw = localStorage.getItem("favorite_houses");
@@ -61,7 +58,7 @@ export default function HouseDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const hasTrackedDetailView = useRef(false); // evita duplicação em StrictMode
+  const hasTrackedDetailView = useRef(false); 
   const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
@@ -75,18 +72,10 @@ export default function HouseDetail() {
 
         setHouse(data);
 
-        // atualiza estado do favorito com base no id real (futura consistência)
         const resolvedId = data.id ?? id;
         setIsFavorited(isFavoritedId(resolvedId));
 
-        // 🟦 TRACK — agora com house_name e após os dados carregarem
         if (!hasTrackedDetailView.current) {
-          console.log("🔵 Tracking House Detail Viewed:", {
-            house_id: data.id ?? id,
-            house_name: data.name,
-            platform: "web",
-          });
-
           try {
             trackEvent("House Detail Viewed", {
               house_id: data.id ?? id,
@@ -113,7 +102,6 @@ export default function HouseDetail() {
 
     return () => (mounted = false);
   }, [id]);
-  // toggle favorito (pode ser chamado no botão)
   const toggleFavorite = () => {
     const resolvedId = house?.id ?? id;
     const resolvedName = house?.name ?? "Unnamed";
@@ -123,7 +111,6 @@ export default function HouseDetail() {
     if (isFavorited) {
       removeFavoriteId(resolvedId);
       setIsFavorited(false);
-      console.log("🟡 Tracking House Unfavorited:", { house_id: resolvedId, house_name: resolvedName });
       try {
         trackEvent("House Unfavorited", {
           house_id: resolvedId,
@@ -136,7 +123,6 @@ export default function HouseDetail() {
     } else {
       addFavoriteId(resolvedId);
       setIsFavorited(true);
-      console.log("🟢 Tracking House Favorited:", { house_id: resolvedId, house_name: resolvedName });
       try {
         trackEvent("House Favorited", {
           house_id: resolvedId,
@@ -242,12 +228,7 @@ export default function HouseDetail() {
             <Link
               to="/home"
               className="btn"
-              onClick={() => {
-                console.log("🟡 Tracking Back Click:", {
-                  house_id: id,
-                  house_name: name,
-                });
-
+              onClick={() => {            
                 try {
                   trackEvent("House Detail Back Clicked", {
                     house_id: id,
@@ -262,7 +243,7 @@ export default function HouseDetail() {
               Back
             </Link>
 
-            {/* Favorite button dual-state */}
+            {}
             <button
               className="btn"
               onClick={toggleFavorite}
