@@ -3,6 +3,7 @@ import { getSpells } from "../api";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
 import { trackEvent } from "../analytics"; 
+import { getPlatform } from "../utils/getPlatform";
 
 const TYPE_OPTIONS = [
   "All",
@@ -40,7 +41,7 @@ export default function SpellsList() {
   useEffect(() => {
     if (!hasTrackedListView.current) {
       try {
-        trackEvent("Spells List Viewed", { platform: "web", type, page_name:'SpellsList'});
+        trackEvent("Spells List Viewed", { platform: getPlatform(), type, page_name:'SpellsList'});
       } catch (e) {
         console.warn("tracking error (Spells List Viewed):", e);
       }
@@ -78,7 +79,7 @@ export default function SpellsList() {
     const id = s.id;
     const name = s.name ?? "Unnamed";
     try {
-      trackEvent("Spell Card Clicked", { spell_id: id, spell_name: name, platform: "web" });
+      trackEvent("Spell Card Clicked", { spell_id: id, spell_name: name, platform: getPlatform() });
     } catch (e) {
       console.warn("tracking error (Spell Card Clicked):", e);
     }
@@ -87,7 +88,7 @@ export default function SpellsList() {
   const handleTypeChange = (value) => {
     setType(value);
     try {
-      trackEvent("Spells Filter Applied", { filter_name: "type", filter_value: value, platform: "web" });
+      trackEvent("Spells Filter Applied", { filter_name: "type", filter_value: value, platform: getPlatform() });
     } catch (e) {
       console.warn("tracking error (Spells Filter Applied):", e);
     }
@@ -102,7 +103,7 @@ export default function SpellsList() {
 
     searchDebounceRef.current = setTimeout(() => {
       try {
-        trackEvent("Spells Search Performed", { query: value, result_count: visible.length, platform: "web" });
+        trackEvent("Spells Search Performed", { query: value, result_count: visible.length, platform: getPlatform() });
       } catch (e) {
         console.warn("tracking error (Spells Search Performed):", e);
       }

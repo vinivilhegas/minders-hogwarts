@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getSpellDetail } from "../api"; 
 import "../index.css";
 import { trackEvent } from "../analytics"; 
+import { getPlatform } from "../utils/getPlatform";
 
 const LS_KEY_SPELLS = "favorite_spells";
 function getFavoriteSpellIds() {
@@ -60,7 +61,7 @@ export default function SpellDetail() {
             trackEvent("Spell Detail Viewed", {
               spell_id: data?.id ?? id,
               spell_name: data?.name ?? "Unnamed",
-              platform: "web",
+              platform: getPlatform(),
             });
           } catch (e) {
             console.warn("tracking error (Spell Detail Viewed):", e);
@@ -89,7 +90,7 @@ export default function SpellDetail() {
       removeFavoriteSpell(resolvedId);
       setIsFavorited(false);
       try {
-        trackEvent("Spell Unfavorited", { spell_id: resolvedId, spell_name: resolvedName, platform: "web" });
+        trackEvent("Spell Unfavorited", { spell_id: resolvedId, spell_name: resolvedName, platform: getPlatform() });
       } catch (e) {
         console.warn("tracking error (Spell Unfavorited):", e);
       }
@@ -97,7 +98,7 @@ export default function SpellDetail() {
       addFavoriteSpell(resolvedId);
       setIsFavorited(true);
       try {
-        trackEvent("Spell Favorited", { spell_id: resolvedId, spell_name: resolvedName, platform: "web" });
+        trackEvent("Spell Favorited", { spell_id: resolvedId, spell_name: resolvedName, platform: getPlatform() });
       } catch (e) {
         console.warn("tracking error (Spell Favorited):", e);
       }
@@ -149,7 +150,7 @@ export default function SpellDetail() {
               className="btn"
               onClick={() => {
                 try {
-                  trackEvent("Spell Detail Back Clicked", { spell_id: id, spell_name: name, platform: "web" });
+                  trackEvent("Spell Detail Back Clicked", { spell_id: id, spell_name: name, platform: getPlatform() });
                 } catch (e) {
                   console.warn("tracking error (Spell Detail Back Clicked):", e);
                 }

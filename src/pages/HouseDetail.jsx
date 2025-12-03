@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getHouseDetail } from "../api";
 import "../index.css";
 import { trackEvent } from "../analytics"; 
+import { getPlatform } from "../utils/getPlatform";
 
 async function resolveHouseImage(name) {
   if (!name) {
@@ -80,7 +81,7 @@ export default function HouseDetail() {
             trackEvent("House Detail Viewed", {
               house_id: data.id ?? id,
               house_name: data.name,
-              platform: "web",
+              platform: getPlatform(),
             });
           } catch (e) {
             console.warn("tracking error (House Detail Viewed):", e);
@@ -115,7 +116,7 @@ export default function HouseDetail() {
         trackEvent("House Unfavorited", {
           house_id: resolvedId,
           house_name: resolvedName,
-          platform: "web",
+          platform: getPlatform(),
         });
       } catch (e) {
         console.warn("tracking error (House Unfavorited):", e);
@@ -127,7 +128,7 @@ export default function HouseDetail() {
         trackEvent("House Favorited", {
           house_id: resolvedId,
           house_name: resolvedName,
-          platform: "web",
+          platform: getPlatform(),
         });
       } catch (e) {
         console.warn("tracking error (House Favorited):", e);
@@ -233,7 +234,7 @@ export default function HouseDetail() {
                   trackEvent("House Detail Back Clicked", {
                     house_id: id,
                     house_name: name,
-                    platform: "web",
+                    platform: getPlatform(),
                   });
                 } catch (e) {
                   console.warn("tracking error (House Detail Back Clicked):", e);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getHouses, getSpells } from "../api";
 import "../index.css";
 import { trackEvent } from "../analytics";
+import { getPlatform } from "../utils/getPlatform";
 
 function getFavoriteHouseIds() {
   try {
@@ -39,7 +40,7 @@ export default function FavoritesList() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    try { trackEvent("Favorites List Viewed", { platform: "web" }); } catch (e) { console.warn(e); }
+    try { trackEvent("Favorites List Viewed", { platform: getPlatform() }); } catch (e) { console.warn(e); }
 
     let mounted = true;
     setLoading(true);
@@ -87,7 +88,7 @@ export default function FavoritesList() {
     removeFavorite(type, id);
     setItems(prev => prev.filter(item => !(item.type === type && item.id === id)));
 
-    try { trackEvent("Item Unfavorited", { item_type: type, item_id: id, item_name: name, platform: "web", source: "favorites_list" }); }
+    try { trackEvent("Item Unfavorited", { item_type: type, item_id: id, item_name: name, platform: getPlatform(), source: "favorites_list" }); }
     catch (e) { console.warn(e); }
   };
 
