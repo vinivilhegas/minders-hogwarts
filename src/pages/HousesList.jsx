@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { getHouses } from "../api";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
-import { trackEvent } from "../analytics"; // ADIÇÃO: helper de tracking
+import { trackEvent } from "../analytics"; 
+import { getPlatform } from "../utils/getPlatform";
 
 export default function HousesList() {
   const [houses, setHouses] = useState([]);
@@ -10,13 +11,12 @@ export default function HousesList() {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-  const hasTrackedListView = useRef(false); // evita duplicação em StrictMode
+  const hasTrackedListView = useRef(false); 
 
   useEffect(() => {
-    // TRACK: dispara apenas uma vez por montagem lógica
     if (!hasTrackedListView.current) {
       try {
-        trackEvent("Houses List Viewed", { platform: "web" });
+        trackEvent("Houses List Viewed", { platform: getPlatform() });
       } catch (e) {
         console.warn("tracking error (Houses List Viewed):", e);
       }
@@ -80,12 +80,11 @@ export default function HousesList() {
                   className="house-card"
                   role="button"
                   onClick={() => {
-                    // TRACK: clique no card (antes de navegar)
                     try {
                       trackEvent("House Card Clicked", {
                         house_id: id,
                         house_name: name,
-                        platform: "web",
+                        platform: getPlatform(),
                       });
                     } catch (e) {
                       console.warn("tracking error (House Card Clicked):", e);
